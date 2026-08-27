@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cyber Awareness Quiz</title>
+<style>
+  :root {
+    --accent: #E8582F;
+    --accent-dark: #C0392B;
+    --text: #10182B;
+    --text-dim: #667085;
+    --border: #E7E9EE;
+    --bg: #F5F6F8;
+    --surface: #FFFFFF;
+    --surface-inset: #FAFAFB;
+    --green: #17A34A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px 14px 60px;
+  }
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(16,24,43,0.06);
+    padding: 24px 22px 26px;
+  }
+  h1 {
+    font-size: 21px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+  .accent-bar {
+    height: 3px;
+    background: var(--accent-dark);
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .section-desc {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 0 0 18px;
+  }
+  label.field {
+    display: block;
+    margin-bottom: 14px;
+  }
+  .field span {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text);
+  }
+  .field input[type="text"],
+  .field input[type="email"] {
+    width: 100%;
+    font-size: 15px;
+    padding: 12px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-inset);
+    color: var(--text);
+    outline: none;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+  }
+  .field.missing input {
+    border-color: var(--accent-dark);
+  }
+  .question-block {
+    margin-bottom: 24px;
+  }
+  .question-text {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0 0 12px;
+  }
+  .question-text .req {
+    color: var(--accent-dark);
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:active { background: var(--surface-inset); }
+  .option.selected {
+    border-color: var(--accent);
+    background: #FDEEE8;
+  }
+  .option input {
+    accent-color: var(--accent);
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+  }
+  .option-text {
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 14px 0;
+    border-radius: 999px;
+    background: var(--text);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14.5px;
+  }
+  .btn-primary:disabled {
+    background: #F0F1F3;
+    color: #9CA3AF;
+    cursor: not-allowed;
+  }
+  .btn-outline {
+    padding: 14px 20px;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 14.5px;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 15px 0;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 8px 20px -8px rgba(232,88,47,0.55);
+  }
+  .btn-submit:disabled {
+    background: #F0F1F3;
+    color: #9CA3AF;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .error-banner {
+    background: #FBEAEA;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--accent-dark);
+    margin-bottom: 16px;
+  }
+  .config-banner {
+    background: #FDEEE8;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #B34A25;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .thankyou {
+    text-align: center;
+    padding: 30px 10px;
+  }
+  .thankyou .check {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #ECFDF3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+  }
+  .thankyou h2 {
+    font-size: 19px;
+    margin: 0 0 8px;
+  }
+  .thankyou p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="app"></div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+ * CONFIG — paste the Apps Script Web App URL here after deploying
+ * apps-script.gs (see the setup comment at the top of that file). This
+ * submits into the REAL Google Form's own response Sheet via our own
+ * Apps Script — NOT into the Form's formResponse endpoint directly.
+ * A raw POST there silently drops every answer past page 1 (its Tip
+ * 1-4 section breaks make it a 5-page form, and Google enforces a
+ * server-side pageHistory check on multi-page forms that an
+ * undecorated POST doesn't satisfy) — confirmed via direct testing.
+ * Routing through our own script sidesteps that entirely while still
+ * writing into the same Sheet everyone already checks.
+ * ------------------------------------------------------------------ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw37rmQ3ps2bsl2-2o5xcZ1LN9YBFaYonx650cjes-0RwpO9CVRc32ICm-LPuaXpWcM/exec";
+
+/* ------------------------------------------------------------------
+ * QUESTION BANK — keep this array identical in dashboard.html so the
+ * two pages can never disagree about question text / option order.
+ * Full option text pulled from the real form's page source — the
+ * earlier truncated-in-screenshot options are now complete.
+ * ------------------------------------------------------------------ */
+const SECTIONS = [
+  {
+    title: "Tip 1: Protect yourself from phishing",
+    questions: [
+      {
+        id: "q1",
+        text: "Which of the following are communication channels used in phishing attempts?",
+        options: ["Email", "Telephone", "Social Media", "All of the above"],
+      },
+      {
+        id: "q2",
+        text: "Which statement about social engineering is false?",
+        options: [
+          "Social engineering is always technological in nature",
+          "Phishing is a type of social engineering which uses digital communication channels",
+          "Tailgating or following an employee into the office is an example of social engineering",
+          "Social engineering is about psychologically manipulating someone into believing what you say",
+        ],
+      },
+      {
+        id: "q3",
+        text: "Which message content helps you to confirm whether it is from a legitimate source?",
+        options: [
+          "Email from a software service provider that you use",
+          "Social media post with professional looking logos",
+          "Email with perfect grammar and no misspelling",
+          "None of the above",
+        ],
+      },
+      {
+        id: "q4",
+        text: "Which of the following is an example of a common phishing scenario?",
+        options: [
+          "Pretending to be an officer from the Cyber Security Agency of Singapore and asking you to provide your corporate data to check if you have been cyber attacked",
+          "Pretending to be an e-commerce shop and advertising a limited offer with their promotion code",
+          "Pretending to be a delivery officer and sending you an email or text message to say that you have to pay a fee to receive your parcel",
+          "All of the above",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Tip 2: Set strong passphrases and protect them",
+    questions: [
+      {
+        id: "q5",
+        text: "Which of the following does not describe passphrases?",
+        options: ["Sequence of characters, e.g. Qwerty12345", "Harder for machines to crack", "More secure than passwords", "Easier to remember"],
+      },
+      {
+        id: "q6",
+        text: "Which of the following is a strong passphrase?",
+        options: ["iloveyou4ever", "BirthD@Y200594", "IhadKAYAtoastKOPI@8am", "P@assword1234!"],
+      },
+      {
+        id: "q7",
+        text: "Which of the following is not a good passphrase practice?",
+        options: [
+          "Using the same passphrases for different accounts",
+          "Not writing down your passphrase",
+          "Not sharing your passphrase with anyone",
+          "Using Multi-Factor Authentication for your accounts",
+        ],
+      },
+      {
+        id: "q8",
+        text: "What are the key considerations in selecting a software that helps you to manage your passphrases?",
+        options: [
+          "Software supports Multi-Factor Authentication",
+          "Software does not come from authorised sources",
+          "Software has does not have good reviews",
+          "Software provider does not have a strong track record",
+        ],
+      },
+      {
+        id: "q9",
+        text: "Which of the following is a Multi-Factor Authentication key?",
+        options: ["Biometric", "Pin", "Passphrase", "All of the above"],
+      },
+    ],
+  },
+  {
+    title: "Tip 3: Protect Your Corporate and/or Personal Devices (Used for Work)",
+    questions: [
+      {
+        id: "q10",
+        text: "Which of the following is not a good practice in protecting your device from loss/theft and unauthorised access?",
+        options: [
+          "Using a laptop lock",
+          "Using passwords, PINs, biometric locks or patterns",
+          "Backing up your data",
+          "Enabling the device’s automatic networking features",
+        ],
+      },
+      {
+        id: "q11",
+        text: "Which of the following is not a good practice when using wireless access?",
+        options: ["Using only trusted networks", "Using Virtual Private Networks (VPNs)", "Enabling the automatic connection to Wi-Fi hotspots", "Using mobile phone’s hot spot"],
+      },
+      {
+        id: "q12",
+        text: "Which of the following is an example of a good practice in software security?",
+        options: [
+          "Enabling automatic software updates",
+          "Rebooting your device after the software update",
+          "Applying software security patches to corporate and personal devices",
+          "All of the above",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Tip 4: Report Cyber Incidents (Including Suspected Incidents)",
+    questions: [
+      {
+        id: "q13",
+        text: "Which of the following is a reason to report cyber incidents?",
+        options: [
+          "Preventing potential harm from the incident",
+          "Alerting the IT teams to potential or occurring cyber attacks",
+          "Providing information to IT teams to diagnose the incident",
+          "All of the above",
+        ],
+      },
+      {
+        id: "q14",
+        text: "Which of the following is a common cyber incident?",
+        options: ["Ransomware attack", "Malware attack", "Data breach", "All of the above"],
+      },
+    ],
+  },
+];
+
+const OPTION_LETTERS = ["A", "B", "C", "D"];
+const TOTAL_STEPS = 1 + SECTIONS.length; // registration + N sections
+
+let state = {
+  step: 0,
+  fullName: "",
+  email: "",
+  answers: {}, // { q1: "A", q2: "C", ... }
+  showErrors: false,
+  submitting: false,
+  submitted: false,
+  submitError: "",
+};
+
+function el(html) {
+  const t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+function isEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+function registrationValid() {
+  return state.fullName.trim() && isEmail(state.email.trim());
+}
+
+function sectionValid(sectionIndex) {
+  const section = SECTIONS[sectionIndex];
+  return section.questions.every((q) => !!state.answers[q.id]);
+}
+
+function allValid() {
+  return registrationValid() && SECTIONS.every((_, i) => sectionValid(i));
+}
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  if (state.submitted) {
+    app.appendChild(renderThankYou());
+    return;
+  }
+
+  app.appendChild(renderHeader());
+  app.appendChild(el(`<div class="accent-bar"></div>`));
+  app.appendChild(renderProgress());
+
+  if (state.step === 0) {
+    app.appendChild(renderRegistration());
+  } else {
+    app.appendChild(renderSection(state.step - 1));
+  }
+
+  app.appendChild(renderNav());
+}
+
+function renderHeader() {
+  return el(`
+    <div>
+      <h1>Cyber Awareness Quiz</h1>
+      <p class="subtitle">Review key cybersecurity tips and best practices — phishing, passphrases, device protection, and incident reporting. Takes about 10 minutes.</p>
+    </div>
+  `);
+}
+
+function renderProgress() {
+  const pct = Math.round((state.step / (TOTAL_STEPS - 1)) * 100);
+  const label = state.step === 0 ? "Getting started" : `Section ${state.step} of ${SECTIONS.length}`;
+  const wrap = el(`
+    <div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <span class="progress-label">${label}</span>
+    </div>
+  `);
+  return wrap;
+}
+
+function renderRegistration() {
+  const wrap = el(`<div></div>`);
+  wrap.appendChild(el(`<p class="section-title">Before you begin</p>`));
+  wrap.appendChild(el(`<p class="section-desc">Your result summary will be tied to this information.</p>`));
+
+  if (state.showErrors && !registrationValid()) {
+    wrap.appendChild(el(`<div class="error-banner">Please fill in all fields with a valid email before continuing.</div>`));
+  }
+
+  const fields = [
+    { key: "fullName", label: "Full Name", type: "text" },
+    { key: "email", label: "Email", type: "email" },
+  ];
+  fields.forEach((f) => {
+    const missing = state.showErrors && !state[f.key].trim();
+    const label = el(`
+      <label class="field ${missing ? "missing" : ""}">
+        <span>${f.label} *</span>
+        <input type="${f.type}" />
+      </label>
+    `);
+    const input = label.querySelector("input");
+    input.value = state[f.key];
+    input.addEventListener("input", (e) => {
+      state[f.key] = e.target.value;
+    });
+    wrap.appendChild(label);
+  });
+
+  return wrap;
+}
+
+function renderSection(sectionIndex) {
+  const section = SECTIONS[sectionIndex];
+  const wrap = el(`<div></div>`);
+  wrap.appendChild(el(`<p class="section-title">${section.title}</p>`));
+
+  if (state.showErrors && !sectionValid(sectionIndex)) {
+    wrap.appendChild(el(`<div class="error-banner">Please answer every question before continuing.</div>`));
+  }
+
+  section.questions.forEach((q) => {
+    const block = el(`
+      <div class="question-block">
+        <p class="question-text">${q.text} <span class="req">*</span></p>
+        <div class="options"></div>
+      </div>
+    `);
+    const optionsWrap = block.querySelector(".options");
+    q.options.forEach((optText, i) => {
+      const letter = OPTION_LETTERS[i];
+      const selected = state.answers[q.id] === letter;
+      const opt = el(`
+        <label class="option ${selected ? "selected" : ""}">
+          <input type="radio" name="${q.id}" ${selected ? "checked" : ""} />
+          <span class="option-text">${optText}</span>
+        </label>
+      `);
+      opt.querySelector("input").addEventListener("change", () => {
+        state.answers[q.id] = letter;
+        render();
+      });
+      optionsWrap.appendChild(opt);
+    });
+    wrap.appendChild(block);
+  });
+
+  return wrap;
+}
+
+function renderNav() {
+  const row = el(`<div class="nav-row"></div>`);
+  const isLast = state.step === TOTAL_STEPS - 1;
+
+  if (state.step > 0) {
+    const back = el(`<button class="btn-outline">Back</button>`);
+    back.addEventListener("click", () => {
+      state.showErrors = false;
+      state.step -= 1;
+      render();
+    });
+    row.appendChild(back);
+  }
+
+  if (!isLast) {
+    const next = el(`<button class="btn-primary">Next</button>`);
+    next.addEventListener("click", () => {
+      const valid = state.step === 0 ? registrationValid() : sectionValid(state.step - 1);
+      if (!valid) {
+        state.showErrors = true;
+        render();
+        return;
+      }
+      state.showErrors = false;
+      state.step += 1;
+      render();
+    });
+    row.appendChild(next);
+  } else {
+    const submit = el(`<button class="btn-primary">${state.submitting ? '<span class="spinner"></span>Submitting…' : "Submit"}</button>`);
+    submit.disabled = state.submitting;
+    submit.addEventListener("click", handleSubmit);
+    row.appendChild(submit);
+  }
+
+  const container = el(`<div></div>`);
+  if (state.submitError) {
+    container.appendChild(el(`<div class="error-banner">${state.submitError}</div>`));
+  }
+  container.appendChild(row);
+  return container;
+}
+
+function renderThankYou() {
+  return el(`
+    <div class="thankyou">
+      <div class="check">✅</div>
+      <h2>Thanks, ${escapeHtml(state.fullName.split(" ")[0] || "there")}!</h2>
+      <p>Your responses have been recorded.<br/>You've completed the Cyber Awareness Quiz.</p>
+    </div>
+  `);
+}
+
+function escapeHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// The target Sheet stores each answer as the full selected option TEXT
+// (matching what a real Google Form submission would look like), not a
+// letter — so convert our internal letter-keyed answers before sending.
+// Keyed by the literal question TEXT (matching the Sheet's header
+// exactly) rather than q1..q14 — apps-script.gs writes by matching
+// against actual header text, not column position, so this doesn't
+// depend on the Sheet's column order.
+function answersAsText() {
+  const out = {};
+  SECTIONS.forEach((section) => {
+    section.questions.forEach((q) => {
+      const letter = state.answers[q.id];
+      const idx = OPTION_LETTERS.indexOf(letter);
+      out[q.text] = q.options[idx];
+    });
+  });
+  return out;
+}
+
+async function handleSubmit() {
+  if (!allValid()) {
+    state.showErrors = true;
+    render();
+    return;
+  }
+  state.submitting = true;
+  state.submitError = "";
+  render();
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight against Apps Script
+      body: JSON.stringify({
+        fullName: state.fullName.trim(),
+        email: state.email.trim(),
+        answers: answersAsText(),
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Submission failed.");
+    state.submitting = false;
+    state.submitted = true;
+    render();
+  } catch (err) {
+    state.submitting = false;
+    state.submitError = "Couldn't submit — please check your connection and try again.";
+    render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
