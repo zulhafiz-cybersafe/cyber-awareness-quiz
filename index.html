@@ -632,13 +632,17 @@ function escapeHtml(s) {
 // The target Sheet stores each answer as the full selected option TEXT
 // (matching what a real Google Form submission would look like), not a
 // letter — so convert our internal letter-keyed answers before sending.
+// Keyed by the literal question TEXT (matching the Sheet's header
+// exactly) rather than q1..q14 — apps-script.gs writes by matching
+// against actual header text, not column position, so this doesn't
+// depend on the Sheet's column order.
 function answersAsText() {
   const out = {};
   SECTIONS.forEach((section) => {
     section.questions.forEach((q) => {
       const letter = state.answers[q.id];
       const idx = OPTION_LETTERS.indexOf(letter);
-      out[q.id] = q.options[idx];
+      out[q.text] = q.options[idx];
     });
   });
   return out;
