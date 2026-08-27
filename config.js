@@ -12,7 +12,7 @@ const CONFIG = {
   // as a Web App (Deploy > New deployment > Web app > Execute as: Me,
   // Who has access: Anyone). Looks like:
   // https://script.google.com/macros/s/AKfycb.../exec
-  APPS_SCRIPT_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyCGHmLXLLF3aMfGhmtFJiFszrnc66sIbxcHWvXpG3qZj18QScypUrvlKKwiKF_cmj_/exec",
 
   // Score needed to count as a "pass", as a fraction (0.7 = 70%).
   PASS_THRESHOLD: 0.7,
