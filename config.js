@@ -23,5 +23,5 @@ const CONFIG = {
   // Column headers to exclude when auto-detecting quiz questions
   // from the response sheet. Add any extra non-question columns here
   // (e.g. "Email Address", "Name") if your form collects them.
-  NON_QUESTION_COLUMNS: ["Timestamp", "Score", "Email Address", "Email"],
+  NON_QUESTION_COLUMNS: ["Timestamp", "Score", "Email Address", "Email", "Full Name"],
 };
