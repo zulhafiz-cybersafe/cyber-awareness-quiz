@@ -571,14 +571,10 @@
       responses.forEach((r) => {
         const val = r[q];
         if (val === "" || val === null || val === undefined) return;
-        String(val)
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean)
-          .forEach((v) => {
-            counts[v] = (counts[v] || 0) + 1;
-            total += 1;
-          });
+        const v = String(val).trim();
+        if (!v) return;
+        counts[v] = (counts[v] || 0) + 1;
+        total += 1;
       });
 
       const block = document.createElement("div");
