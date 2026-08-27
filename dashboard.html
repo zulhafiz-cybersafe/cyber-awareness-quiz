@@ -252,6 +252,70 @@
     text-align: center;
     padding: 40px 0;
   }
+
+  details.participant-panel summary {
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  details.participant-panel summary::-webkit-details-marker { display: none; }
+  details.participant-panel summary::before {
+    content: "▸";
+    font-size: 11px;
+    color: var(--signal);
+    transition: transform 0.15s ease;
+  }
+  details.participant-panel[open] summary::before {
+    transform: rotate(90deg);
+  }
+  details.participant-panel summary .count-badge {
+    font-family: var(--sans);
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 13px;
+  }
+  .participant-table-wrap {
+    margin-top: 16px;
+    overflow-x: auto;
+  }
+  table.participant-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.participant-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.participant-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    vertical-align: top;
+  }
+  table.participant-table tr:last-child td { border-bottom: none; }
+  table.participant-table td.score-cell {
+    font-family: var(--mono);
+    color: var(--signal);
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -318,6 +382,13 @@
     <h2>Answer Breakdown by Question</h2>
     <div id="question-blocks"><div class="empty">Loading responses…</div></div>
   </div>
+
+  <div class="panel">
+    <details class="participant-panel">
+      <summary>Participant Details <span class="count-badge" id="participant-count"></span></summary>
+      <div class="participant-table-wrap" id="participant-table-wrap"></div>
+    </details>
+  </div>
 </div>
 
 <script>
@@ -343,11 +414,14 @@
     return isNaN(n) ? null : { points: n, total: null };
   }
 
+  function findColumn(headers, regex) {
+    return headers.find((h) => regex.test(h.trim())) || null;
+  }
   function findScoreColumn(headers) {
-    return headers.find((h) => /^score$/i.test(h.trim())) || null;
+    return findColumn(headers, /^score$/i);
   }
   function findTimestampColumn(headers) {
-    return headers.find((h) => /^timestamp$/i.test(h.trim())) || headers[0];
+    return findColumn(headers, /^timestamp$/i) || headers[0];
   }
 
   function render(data) {
@@ -364,11 +438,16 @@
       document.getElementById("stat-avg").textContent = "—";
       document.getElementById("stat-pass").textContent = "—";
       document.getElementById("stat-top").textContent = "—";
+      document.getElementById("participant-count").textContent = "(0)";
+      document.getElementById("participant-table-wrap").innerHTML =
+        '<div class="empty">No responses yet.</div>';
       return;
     }
 
     const scoreCol = findScoreColumn(headers);
     const tsCol = findTimestampColumn(headers);
+    const nameCol = findColumn(headers, /full ?name/i) || findColumn(headers, /^name$/i);
+    const emailCol = findColumn(headers, /e-?mail/i);
 
     // ---- Score stats ----
     let parsedScores = [];
@@ -478,7 +557,9 @@
     });
 
     // ---- Per-question breakdown ----
-    const skip = new Set([tsCol, scoreCol, ...(CONFIG.NON_QUESTION_COLUMNS || [])]);
+    const skip = new Set(
+      [tsCol, scoreCol, nameCol, emailCol, ...(CONFIG.NON_QUESTION_COLUMNS || [])].filter(Boolean)
+    );
     const questionCols = headers.filter((h) => h && !skip.has(h));
 
     const container = document.getElementById("question-blocks");
@@ -532,6 +613,37 @@
       container.innerHTML =
         '<div class="empty">No question columns detected. Check CONFIG.NON_QUESTION_COLUMNS in config.js.</div>';
     }
+
+    renderParticipants(responses, nameCol, emailCol, scoreCol);
+  }
+
+  function renderParticipants(responses, nameCol, emailCol, scoreCol) {
+    document.getElementById("participant-count").textContent =
+      "(" + responses.length + ")";
+
+    const wrap = document.getElementById("participant-table-wrap");
+
+    if (!nameCol && !emailCol && !scoreCol) {
+      wrap.innerHTML =
+        '<div class="empty">No name, email, or score columns detected.</div>';
+      return;
+    }
+
+    const rows = responses
+      .map((r) => {
+        const name = nameCol && r[nameCol] ? escapeHtml(r[nameCol]) : "—";
+        const email = emailCol && r[emailCol] ? escapeHtml(r[emailCol]) : "—";
+        const score = scoreCol && r[scoreCol] ? escapeHtml(String(r[scoreCol])) : "—";
+        return (
+          "<tr><td>" + name + "</td><td>" + email + "</td><td class=\"score-cell\">" + score + "</td></tr>"
+        );
+      })
+      .join("");
+
+    wrap.innerHTML =
+      '<table class="participant-table"><thead><tr><th>Full Name</th><th>Email</th><th>Score</th></tr></thead><tbody>' +
+      rows +
+      "</tbody></table>";
   }
 
   function chartBaseOptions() {
