@@ -1,512 +1,589 @@
-<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cyber Awareness Quiz — Results Dashboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cyber Awareness Quiz — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="config.js"></script>
 <style>
   :root {
-    --accent: #E8582F;
-    --accent-dark: #C0392B;
-    --text: #10182B;
-    --text-dim: #667085;
-    --border: #E7E9EE;
-    --bg: #F5F6F8;
-    --surface: #FFFFFF;
-    --surface-inset: #FAFAFB;
-    --green: #17A34A;
-    --green-bg: #ECFDF3;
+    --ink: #0c141c;
+    --surface: #131f2b;
+    --surface-raised: #1a2938;
+    --line: #26394a;
+    --signal: #4fd1c5;
+    --signal-soft: rgba(79, 209, 197, 0.14);
+    --amber: #f5a623;
+    --amber-soft: rgba(245, 166, 35, 0.14);
+    --coral: #ff6b6b;
+    --coral-soft: rgba(255, 107, 107, 0.14);
+    --text: #e7edf3;
+    --text-muted: #8a98a8;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --sans: "Inter", system-ui, sans-serif;
   }
+
   * { box-sizing: border-box; }
+
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
+    background: var(--ink);
     color: var(--text);
+    font-family: var(--sans);
+    padding: 28px 20px 60px;
   }
-  .wrap {
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 24px 18px 60px;
-  }
-  .top {
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  header {
     display: flex;
-    align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 4px;
+    align-items: flex-end;
     flex-wrap: wrap;
-  }
-  h1 {
-    font-size: 22px;
-    margin: 0 0 4px;
-  }
-  .subtitle {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin: 0;
-  }
-  .accent-bar {
-    height: 3px;
-    background: var(--accent-dark);
-    border-radius: 2px;
-    margin: 16px 0 20px;
-  }
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .btn {
-    font-family: inherit;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .btn:hover { background: var(--surface-inset); }
-  .btn.spinning { color: var(--text-dim); }
-  .last-updated {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 26px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
   }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-  }
-  .stat-value {
-    font-size: 26px;
-    font-weight: 700;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .stat-label {
-    font-size: 11.5px;
-    color: var(--text-dim);
-    font-weight: 600;
-    margin-top: 2px;
-  }
-  .section {
-    margin-bottom: 30px;
-  }
-  .section-title {
-    font-size: 15px;
-    font-weight: 700;
-    margin: 0 0 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .q-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 14px;
-  }
-  .q-text {
-    font-size: 13.5px;
-    font-weight: 700;
-    margin: 0 0 4px;
-    line-height: 1.4;
-  }
-  .q-total {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin: 0 0 14px;
-  }
-  .bar-row {
+
+  .eyebrow {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 9px;
-  }
-  .bar-letter {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    background: var(--surface-inset);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--text-dim);
-    flex-shrink: 0;
-  }
-  .bar-body {
-    flex: 1;
-    min-width: 0;
-  }
-  .bar-label-row {
-    display: flex;
-    justify-content: space-between;
     gap: 8px;
-    margin-bottom: 3px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    color: var(--signal);
+    text-transform: uppercase;
+    margin-bottom: 10px;
   }
-  .bar-option-text {
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.35;
+  .eyebrow .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--signal);
+    animation: pulse 2s infinite;
   }
-  .bar-count {
-    font-size: 11px;
-    font-weight: 700;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    color: var(--text-dim);
-    flex-shrink: 0;
-    white-space: nowrap;
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(79,209,197,.5); }
+    70% { box-shadow: 0 0 0 8px rgba(79,209,197,0); }
+    100% { box-shadow: 0 0 0 0 rgba(79,209,197,0); }
   }
-  .bar-track {
-    height: 8px;
-    background: var(--surface-inset);
-    border-radius: 999px;
-    overflow: hidden;
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
   }
-  .bar-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 999px;
-    transition: width 0.4s ease;
+
+  .refresh-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
   }
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
+
+  #refresh-btn {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink);
+    background: var(--signal);
+    border: none;
+    border-radius: 3px;
+    padding: 7px 12px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  #refresh-btn:hover { filter: brightness(1.08); }
+  #refresh-btn:disabled { opacity: 0.5; cursor: default; }
+
+  #banner {
+    display: none;
+    font-family: var(--mono);
     font-size: 13px;
-  }
-  .config-banner {
-    background: #FDEEE8;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 12.5px;
-    color: #B34A25;
+    color: var(--coral);
+    background: var(--coral-soft);
+    border: 1px solid rgba(255,107,107,0.35);
+    border-radius: 4px;
+    padding: 12px 14px;
     margin-bottom: 20px;
     line-height: 1.5;
   }
-  .error-banner {
-    background: #FBEAEA;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 12.5px;
-    color: var(--accent-dark);
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 720px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .stat .label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .stat .value {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .stat .value.signal { color: var(--signal); }
+  .stat .value.amber { color: var(--amber); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 20px 22px;
     margin-bottom: 20px;
   }
-  .responses-panel {
-    margin-top: 30px;
+  .panel h2 {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    font-weight: 600;
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
+
+  /* Gauge */
+  .gauge-track {
+    position: relative;
+    height: 14px;
+    border-radius: 7px;
     overflow: hidden;
-    font-size: 12px;
+    display: flex;
+    margin-bottom: 10px;
   }
-  th, td {
-    text-align: left;
-    padding: 9px 12px;
-    border-bottom: 1px solid var(--border);
+  .gauge-track .seg.red { background: var(--coral); flex: 0 0 50%; }
+  .gauge-track .seg.amber { background: var(--amber); flex: 0 0 20%; }
+  .gauge-track .seg.green { background: var(--signal); flex: 0 0 30%; }
+  .gauge-marker {
+    position: absolute;
+    top: -5px;
+    width: 2px;
+    height: 24px;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(255,255,255,0.8);
+  }
+  .gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  canvas { max-height: 260px; }
+
+  .q-block { margin-bottom: 22px; }
+  .q-block:last-child { margin-bottom: 0; }
+  .q-title {
+    font-size: 13.5px;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .q-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+  }
+  .q-row .opt-label {
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
-  th {
-    background: var(--surface-inset);
-    font-weight: 700;
-    color: var(--text-dim);
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+  .q-bar-track {
+    height: 8px;
+    background: var(--surface-raised);
+    border-radius: 4px;
+    overflow: hidden;
   }
-  tr:last-child td { border-bottom: none; }
-  .table-scroll {
-    overflow-x: auto;
-    border-radius: 14px;
+  .q-bar-fill {
+    height: 100%;
+    background: var(--signal);
+    border-radius: 4px;
   }
-  .footer-stamp {
+  .q-row .count {
+    font-family: var(--mono);
+    color: var(--text-muted);
     text-align: right;
-    margin-top: 30px;
-    font-size: 9px;
-    color: #C4C9D1;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .empty {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px 0;
   }
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow"><span class="dot"></span>Live Feed</div>
+      <h1>Cyber Awareness Quiz — Results Dashboard</h1>
+    </div>
+    <div class="refresh-box">
+      <span id="last-updated">Not loaded yet</span>
+      <button id="refresh-btn">Refresh now</button>
+    </div>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="stat-row">
+    <div class="stat">
+      <div class="label">Total Responses</div>
+      <div class="value" id="stat-total">—</div>
+    </div>
+    <div class="stat">
+      <div class="label">Average Score</div>
+      <div class="value signal" id="stat-avg">—</div>
+    </div>
+    <div class="stat">
+      <div class="label">Pass Rate</div>
+      <div class="value amber" id="stat-pass">—</div>
+    </div>
+    <div class="stat">
+      <div class="label">Top Score</div>
+      <div class="value" id="stat-top">—</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Class Signal Strength — Average vs. Pass Threshold</h2>
+    <div class="gauge-track">
+      <div class="seg red"></div>
+      <div class="seg amber"></div>
+      <div class="seg green"></div>
+      <div class="gauge-marker" id="gauge-marker" style="left: 0%"></div>
+    </div>
+    <div class="gauge-labels">
+      <span>0%</span>
+      <span id="gauge-threshold-label">Pass: —</span>
+      <span>100%</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h2>Score Distribution</h2>
+      <canvas id="chart-scores"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Submissions Over Time</h2>
+      <canvas id="chart-time"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Answer Breakdown by Question</h2>
+    <div id="question-blocks"><div class="empty">Loading responses…</div></div>
+  </div>
+</div>
 
 <script>
-/* ------------------------------------------------------------------
- * CONFIG — same Apps Script Web App URL as quiz.html (apps-script.gs),
- * reading the real Google Form's own response Sheet.
- * ------------------------------------------------------------------ */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw37rmQ3ps2bsl2-2o5xcZ1LN9YBFaYonx650cjes-0RwpO9CVRc32ICm-LPuaXpWcM/exec";
-const AUTO_REFRESH_SECONDS = 15;
+  let scoreChart = null;
+  let timeChart = null;
+  let countdownTimer = null;
 
-/* ------------------------------------------------------------------
- * QUESTION BANK — must stay byte-identical to quiz.html so tallies
- * map back to the right question/option text. Full option text pulled
- * from the real form's page source.
- * ------------------------------------------------------------------ */
-const SECTIONS = [
-  {
-    title: "Tip 1: Protect yourself from phishing",
-    questions: [
-      { id: "q1", text: "Which of the following are communication channels used in phishing attempts?", options: ["Email", "Telephone", "Social Media", "All of the above"] },
-      { id: "q2", text: "Which statement about social engineering is false?", options: [
-        "Social engineering is always technological in nature",
-        "Phishing is a type of social engineering which uses digital communication channels",
-        "Tailgating or following an employee into the office is an example of social engineering",
-        "Social engineering is about psychologically manipulating someone into believing what you say",
-      ] },
-      { id: "q3", text: "Which message content helps you to confirm whether it is from a legitimate source?", options: [
-        "Email from a software service provider that you use",
-        "Social media post with professional looking logos",
-        "Email with perfect grammar and no misspelling",
-        "None of the above",
-      ] },
-      { id: "q4", text: "Which of the following is an example of a common phishing scenario?", options: [
-        "Pretending to be an officer from the Cyber Security Agency of Singapore and asking you to provide your corporate data to check if you have been cyber attacked",
-        "Pretending to be an e-commerce shop and advertising a limited offer with their promotion code",
-        "Pretending to be a delivery officer and sending you an email or text message to say that you have to pay a fee to receive your parcel",
-        "All of the above",
-      ] },
-    ],
-  },
-  {
-    title: "Tip 2: Set strong passphrases and protect them",
-    questions: [
-      { id: "q5", text: "Which of the following does not describe passphrases?", options: ["Sequence of characters, e.g. Qwerty12345", "Harder for machines to crack", "More secure than passwords", "Easier to remember"] },
-      { id: "q6", text: "Which of the following is a strong passphrase?", options: ["iloveyou4ever", "BirthD@Y200594", "IhadKAYAtoastKOPI@8am", "P@assword1234!"] },
-      { id: "q7", text: "Which of the following is not a good passphrase practice?", options: [
-        "Using the same passphrases for different accounts",
-        "Not writing down your passphrase",
-        "Not sharing your passphrase with anyone",
-        "Using Multi-Factor Authentication for your accounts",
-      ] },
-      { id: "q8", text: "What are the key considerations in selecting a software that helps you to manage your passphrases?", options: [
-        "Software supports Multi-Factor Authentication",
-        "Software does not come from authorised sources",
-        "Software has does not have good reviews",
-        "Software provider does not have a strong track record",
-      ] },
-      { id: "q9", text: "Which of the following is a Multi-Factor Authentication key?", options: ["Biometric", "Pin", "Passphrase", "All of the above"] },
-    ],
-  },
-  {
-    title: "Tip 3: Protect Your Corporate and/or Personal Devices (Used for Work)",
-    questions: [
-      { id: "q10", text: "Which of the following is not a good practice in protecting your device from loss/theft and unauthorised access?", options: [
-        "Using a laptop lock",
-        "Using passwords, PINs, biometric locks or patterns",
-        "Backing up your data",
-        "Enabling the device’s automatic networking features",
-      ] },
-      { id: "q11", text: "Which of the following is not a good practice when using wireless access?", options: ["Using only trusted networks", "Using Virtual Private Networks (VPNs)", "Enabling the automatic connection to Wi-Fi hotspots", "Using mobile phone’s hot spot"] },
-      { id: "q12", text: "Which of the following is an example of a good practice in software security?", options: [
-        "Enabling automatic software updates",
-        "Rebooting your device after the software update",
-        "Applying software security patches to corporate and personal devices",
-        "All of the above",
-      ] },
-    ],
-  },
-  {
-    title: "Tip 4: Report Cyber Incidents (Including Suspected Incidents)",
-    questions: [
-      { id: "q13", text: "Which of the following is a reason to report cyber incidents?", options: [
-        "Preventing potential harm from the incident",
-        "Alerting the IT teams to potential or occurring cyber attacks",
-        "Providing information to IT teams to diagnose the incident",
-        "All of the above",
-      ] },
-      { id: "q14", text: "Which of the following is a common cyber incident?", options: ["Ransomware attack", "Malware attack", "Data breach", "All of the above"] },
-    ],
-  },
-];
-
-const OPTION_LETTERS = ["A", "B", "C", "D"];
-
-let state = {
-  loading: true,
-  error: "",
-  rows: [],
-  lastUpdated: null,
-  refreshing: false,
-};
-
-let timerId = null;
-
-function el(html) {
-  const t = document.createElement("template");
-  t.innerHTML = html.trim();
-  return t.content.firstElementChild;
-}
-
-async function fetchResults() {
-  if (SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
-    state.loading = false;
-    render();
-    return;
+  function showBanner(msg) {
+    const el = document.getElementById("banner");
+    el.textContent = msg;
+    el.style.display = "block";
   }
-  state.refreshing = true;
-  render();
-  try {
-    const res = await fetch(`${SCRIPT_URL}?action=results`, { cache: "no-store" });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Failed to load results.");
-    state.rows = data.rows || [];
-    state.lastUpdated = new Date();
-    state.error = "";
-  } catch (err) {
-    state.error = "Couldn't load results — check the connection or SCRIPT_URL.";
-  } finally {
-    state.loading = false;
-    state.refreshing = false;
-    render();
-  }
-}
-
-// This Sheet's columns are headed by the actual question text (it's the
-// real Google Form's own response Sheet), and each answer is stored as
-// the full selected option TEXT rather than a letter — so tally by
-// matching against this question's own option strings.
-function tallyFor(q) {
-  const counts = q.options.map(() => 0);
-  state.rows.forEach((row) => {
-    const val = row[q.text];
-    const idx = q.options.indexOf(val);
-    if (idx !== -1) counts[idx] += 1;
-  });
-  return counts;
-}
-
-function render() {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-
-  app.appendChild(el(`
-    <div class="top">
-      <div>
-        <h1>Cyber Awareness Quiz — Results</h1>
-        <p class="subtitle">Live tally of participant answers, grouped by question.</p>
-      </div>
-    </div>
-  `));
-  app.appendChild(el(`<div class="accent-bar"></div>`));
-
-  if (SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
-    app.appendChild(el(`<div class="config-banner">⚠️ SCRIPT_URL isn't configured yet — paste the Apps Script Web App URL at the top of this file to load real data.</div>`));
-    return;
+  function hideBanner() {
+    document.getElementById("banner").style.display = "none";
   }
 
-  const controls = el(`
-    <div class="top" style="margin-bottom:20px;">
-      <span class="last-updated">${state.lastUpdated ? "Last updated " + state.lastUpdated.toLocaleTimeString() : ""}</span>
-      <div class="controls">
-        <button class="btn ${state.refreshing ? "spinning" : ""}" id="refreshBtn">${state.refreshing ? "Refreshing…" : "Refresh now"}</button>
-      </div>
-    </div>
-  `);
-  app.appendChild(controls);
-  controls.querySelector("#refreshBtn").addEventListener("click", fetchResults);
-
-  if (state.error) {
-    app.appendChild(el(`<div class="error-banner">${state.error}</div>`));
+  function parseScore(raw) {
+    if (raw === null || raw === undefined || raw === "") return null;
+    if (typeof raw === "number") return { points: raw, total: null };
+    const m = String(raw).match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/);
+    if (m) return { points: parseFloat(m[1]), total: parseFloat(m[2]) };
+    const n = parseFloat(raw);
+    return isNaN(n) ? null : { points: n, total: null };
   }
 
-  if (state.loading) {
-    app.appendChild(el(`<div class="empty-state">Loading…</div>`));
-    return;
+  function findScoreColumn(headers) {
+    return headers.find((h) => /^score$/i.test(h.trim())) || null;
+  }
+  function findTimestampColumn(headers) {
+    return headers.find((h) => /^timestamp$/i.test(h.trim())) || headers[0];
   }
 
-  if (state.rows.length === 0) {
-    app.appendChild(el(`<div class="empty-state">No responses yet — once someone submits the quiz, results will appear here automatically.</div>`));
-    return;
-  }
+  function render(data) {
+    const headers = data.headers || [];
+    const responses = data.responses || [];
 
-  app.appendChild(el(`
-    <div class="stat-row">
-      <div class="stat-card"><div class="stat-value">${state.rows.length}</div><div class="stat-label">Total responses</div></div>
-      <div class="stat-card"><div class="stat-value">${AUTO_REFRESH_SECONDS}s</div><div class="stat-label">Auto-refresh interval</div></div>
-    </div>
-  `));
+    document.getElementById("last-updated").textContent =
+      "Updated " + new Date(data.generatedAt || Date.now()).toLocaleTimeString();
 
-  SECTIONS.forEach((section) => {
-    const sectionEl = el(`<div class="section"><p class="section-title">${section.title}</p></div>`);
-    section.questions.forEach((q) => {
-      const counts = tallyFor(q);
-      const total = counts.reduce((a, b) => a + b, 0);
-      const qCard = el(`
-        <div class="q-card">
-          <p class="q-text">${q.text}</p>
-          <p class="q-total">${total} response${total === 1 ? "" : "s"}</p>
-        </div>
-      `);
-      q.options.forEach((optText, i) => {
-        const letter = OPTION_LETTERS[i];
-        const count = counts[i];
-        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-        qCard.appendChild(el(`
-          <div class="bar-row">
-            <span class="bar-letter">${letter}</span>
-            <div class="bar-body">
-              <div class="bar-label-row">
-                <span class="bar-option-text">${optText}</span>
-                <span class="bar-count">${count} (${pct}%)</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-            </div>
-          </div>
-        `));
+    if (responses.length === 0) {
+      document.getElementById("question-blocks").innerHTML =
+        '<div class="empty">No responses yet — results will appear here as soon as the first submission comes in.</div>';
+      document.getElementById("stat-total").textContent = "0";
+      document.getElementById("stat-avg").textContent = "—";
+      document.getElementById("stat-pass").textContent = "—";
+      document.getElementById("stat-top").textContent = "—";
+      return;
+    }
+
+    const scoreCol = findScoreColumn(headers);
+    const tsCol = findTimestampColumn(headers);
+
+    // ---- Score stats ----
+    let parsedScores = [];
+    let maxTotal = null;
+    if (scoreCol) {
+      parsedScores = responses
+        .map((r) => parseScore(r[scoreCol]))
+        .filter((s) => s !== null);
+      parsedScores.forEach((s) => {
+        if (s.total !== null) maxTotal = Math.max(maxTotal || 0, s.total);
       });
-      sectionEl.appendChild(qCard);
+    }
+
+    document.getElementById("stat-total").textContent = responses.length;
+
+    if (parsedScores.length) {
+      const avgPoints =
+        parsedScores.reduce((a, s) => a + s.points, 0) / parsedScores.length;
+      document.getElementById("stat-avg").textContent = maxTotal
+        ? avgPoints.toFixed(1) + " / " + maxTotal
+        : avgPoints.toFixed(1);
+
+      const topPoints = Math.max(...parsedScores.map((s) => s.points));
+      document.getElementById("stat-top").textContent = maxTotal
+        ? topPoints + " / " + maxTotal
+        : topPoints;
+
+      if (maxTotal) {
+        const passCount = parsedScores.filter(
+          (s) => s.points / s.total >= CONFIG.PASS_THRESHOLD
+        ).length;
+        const passPct = Math.round((passCount / parsedScores.length) * 100);
+        document.getElementById("stat-pass").textContent = passPct + "%";
+
+        const avgPct = Math.round((avgPoints / maxTotal) * 100);
+        document.getElementById("gauge-marker").style.left = avgPct + "%";
+        document.getElementById("gauge-threshold-label").textContent =
+          "Pass: " + Math.round(CONFIG.PASS_THRESHOLD * 100) + "%";
+      } else {
+        document.getElementById("stat-pass").textContent = "n/a";
+      }
+    } else {
+      document.getElementById("stat-avg").textContent = "n/a";
+      document.getElementById("stat-pass").textContent = "n/a";
+      document.getElementById("stat-top").textContent = "n/a";
+    }
+
+    // ---- Score distribution chart ----
+    if (parsedScores.length) {
+      const counts = {};
+      parsedScores.forEach((s) => {
+        counts[s.points] = (counts[s.points] || 0) + 1;
+      });
+      const labels = Object.keys(counts)
+        .map(Number)
+        .sort((a, b) => a - b);
+
+      const ctx = document.getElementById("chart-scores");
+      if (scoreChart) scoreChart.destroy();
+      scoreChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels.map((l) => (maxTotal ? l + "/" + maxTotal : l)),
+          datasets: [
+            {
+              label: "Respondents",
+              data: labels.map((l) => counts[l]),
+              backgroundColor: "#4fd1c5",
+              borderRadius: 3,
+            },
+          ],
+        },
+        options: chartBaseOptions(false),
+      });
+    }
+
+    // ---- Submissions over time chart ----
+    const dayCounts = {};
+    responses.forEach((r) => {
+      const raw = r[tsCol];
+      if (!raw) return;
+      const d = new Date(raw);
+      if (isNaN(d)) return;
+      const key = d.toISOString().slice(0, 10);
+      dayCounts[key] = (dayCounts[key] || 0) + 1;
     });
-    app.appendChild(sectionEl);
-  });
+    const dayLabels = Object.keys(dayCounts).sort();
+    const ctxTime = document.getElementById("chart-time");
+    if (timeChart) timeChart.destroy();
+    timeChart = new Chart(ctxTime, {
+      type: "line",
+      data: {
+        labels: dayLabels,
+        datasets: [
+          {
+            label: "Submissions",
+            data: dayLabels.map((d) => dayCounts[d]),
+            borderColor: "#f5a623",
+            backgroundColor: "rgba(245,166,35,0.15)",
+            fill: true,
+            tension: 0.25,
+            pointRadius: 3,
+          },
+        ],
+      },
+      options: chartBaseOptions(false),
+    });
 
-  const respPanel = el(`
-    <div class="responses-panel">
-      <p class="section-title">All responses</p>
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>Time</th><th>Name</th><th>Email</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  `);
-  const tbody = respPanel.querySelector("tbody");
-  state.rows.slice().reverse().forEach((r) => {
-    const ts = r["Timestamp"] ? new Date(r["Timestamp"]).toLocaleString() : "—";
-    tbody.appendChild(el(`
-      <tr>
-        <td>${ts}</td>
-        <td>${r["Full Name"] || "—"}</td>
-        <td>${r["Email"] || "—"}</td>
-      </tr>
-    `));
-  });
-  app.appendChild(respPanel);
+    // ---- Per-question breakdown ----
+    const skip = new Set([tsCol, scoreCol, ...(CONFIG.NON_QUESTION_COLUMNS || [])]);
+    const questionCols = headers.filter((h) => h && !skip.has(h));
 
-  app.appendChild(el(`<div class="footer-stamp">Cyber Awareness Quiz Dashboard</div>`));
-}
+    const container = document.getElementById("question-blocks");
+    container.innerHTML = "";
 
-render();
-fetchResults();
-timerId = setInterval(fetchResults, AUTO_REFRESH_SECONDS * 1000);
+    questionCols.forEach((q) => {
+      const counts = {};
+      let total = 0;
+      responses.forEach((r) => {
+        const val = r[q];
+        if (val === "" || val === null || val === undefined) return;
+        String(val)
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean)
+          .forEach((v) => {
+            counts[v] = (counts[v] || 0) + 1;
+            total += 1;
+          });
+      });
+
+      const block = document.createElement("div");
+      block.className = "q-block";
+
+      const title = document.createElement("div");
+      title.className = "q-title";
+      title.textContent = q;
+      block.appendChild(title);
+
+      Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([option, count]) => {
+          const pct = total ? Math.round((count / total) * 100) : 0;
+          const row = document.createElement("div");
+          row.className = "q-row";
+          row.innerHTML =
+            '<span class="opt-label" title="' + escapeHtml(option) + '">' +
+            escapeHtml(option) +
+            '</span>' +
+            '<span class="q-bar-track"><span class="q-bar-fill" style="width:' +
+            pct +
+            '%"></span></span>' +
+            '<span class="count">' + count + " (" + pct + "%)</span>";
+          block.appendChild(row);
+        });
+
+      container.appendChild(block);
+    });
+
+    if (questionCols.length === 0) {
+      container.innerHTML =
+        '<div class="empty">No question columns detected. Check CONFIG.NON_QUESTION_COLUMNS in config.js.</div>';
+    }
+  }
+
+  function chartBaseOptions() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: "#8a98a8", font: { family: "IBM Plex Mono", size: 10.5 } },
+          grid: { color: "#26394a" },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#8a98a8", font: { family: "IBM Plex Mono", size: 10.5 }, precision: 0 },
+          grid: { color: "#26394a" },
+        },
+      },
+    };
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  async function loadData() {
+    const btn = document.getElementById("refresh-btn");
+    btn.disabled = true;
+    btn.textContent = "Loading…";
+    try {
+      if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.startsWith("PASTE_")) {
+        showBanner(
+          "APPS_SCRIPT_URL is not set in config.js yet. Deploy apps-script/Code.gs as a Web App and paste the /exec URL into config.js."
+        );
+        return;
+      }
+      const res = await fetch(CONFIG.APPS_SCRIPT_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      hideBanner();
+      render(data);
+    } catch (err) {
+      console.error(err);
+      showBanner("Couldn't load results: " + err.message + ". Check the Apps Script deployment and try Refresh.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Refresh now";
+    }
+  }
+
+  document.getElementById("refresh-btn").addEventListener("click", loadData);
+
+  loadData();
+  setInterval(loadData, CONFIG.REFRESH_INTERVAL_MS || 60000);
 </script>
 </body>
 </html>
