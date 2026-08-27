@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cyber Awareness Quiz — Results Dashboard</title>
+<style>
+  :root {
+    --accent: #E8582F;
+    --accent-dark: #C0392B;
+    --text: #10182B;
+    --text-dim: #667085;
+    --border: #E7E9EE;
+    --bg: #F5F6F8;
+    --surface: #FFFFFF;
+    --surface-inset: #FAFAFB;
+    --green: #17A34A;
+    --green-bg: #ECFDF3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 24px 18px 60px;
+  }
+  .top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+  .accent-bar {
+    height: 3px;
+    background: var(--accent-dark);
+    border-radius: 2px;
+    margin: 16px 0 20px;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn {
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .btn:hover { background: var(--surface-inset); }
+  .btn.spinning { color: var(--text-dim); }
+  .last-updated {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 26px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .stat-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .section {
+    margin-bottom: 30px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .q-text {
+    font-size: 13.5px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    line-height: 1.4;
+  }
+  .q-total {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin: 0 0 14px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+  }
+  .bar-letter {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--surface-inset);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .bar-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .bar-label-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .bar-option-text {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .bar-count {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .bar-track {
+    height: 8px;
+    background: var(--surface-inset);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .config-banner {
+    background: #FDEEE8;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: #B34A25;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .error-banner {
+    background: #FBEAEA;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: var(--accent-dark);
+    margin-bottom: 20px;
+  }
+  .responses-panel {
+    margin-top: 30px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th {
+    background: var(--surface-inset);
+    font-weight: 700;
+    color: var(--text-dim);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .table-scroll {
+    overflow-x: auto;
+    border-radius: 14px;
+  }
+  .footer-stamp {
+    text-align: right;
+    margin-top: 30px;
+    font-size: 9px;
+    color: #C4C9D1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ------------------------------------------------------------------
+ * CONFIG — same Apps Script Web App URL as quiz.html (apps-script.gs),
+ * reading the real Google Form's own response Sheet.
+ * ------------------------------------------------------------------ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQ3Ptlc5HLm8mb7EKVfJCzE1lnmqrb53NvfRBh_tCT-WH2Wr722vwuXRySbAMgI6ZUeA/exec";
+const AUTO_REFRESH_SECONDS = 15;
+
+/* ------------------------------------------------------------------
+ * QUESTION BANK — must stay byte-identical to quiz.html so tallies
+ * map back to the right question/option text. Full option text pulled
+ * from the real form's page source.
+ * ------------------------------------------------------------------ */
+const SECTIONS = [
+  {
+    title: "Tip 1: Protect yourself from phishing",
+    questions: [
+      { id: "q1", text: "Which of the following are communication channels used in phishing attempts?", options: ["Email", "Telephone", "Social Media", "All of the above"] },
+      { id: "q2", text: "Which statement about social engineering is false?", options: [
+        "Social engineering is always technological in nature",
+        "Phishing is a type of social engineering which uses digital communication channels",
+        "Tailgating or following an employee into the office is an example of social engineering",
+        "Social engineering is about psychologically manipulating someone into believing what you say",
+      ] },
+      { id: "q3", text: "Which message content helps you to confirm whether it is from a legitimate source?", options: [
+        "Email from a software service provider that you use",
+        "Social media post with professional looking logos",
+        "Email with perfect grammar and no misspelling",
+        "None of the above",
+      ] },
+      { id: "q4", text: "Which of the following is an example of a common phishing scenario?", options: [
+        "Pretending to be an officer from the Cyber Security Agency of Singapore and asking you to provide your corporate data to check if you have been cyber attacked",
+        "Pretending to be an e-commerce shop and advertising a limited offer with their promotion code",
+        "Pretending to be a delivery officer and sending you an email or text message to say that you have to pay a fee to receive your parcel",
+        "All of the above",
+      ] },
+    ],
+  },
+  {
+    title: "Tip 2: Set strong passphrases and protect them",
+    questions: [
+      { id: "q5", text: "Which of the following does not describe passphrases?", options: ["Sequence of characters, e.g. Qwerty12345", "Harder for machines to crack", "More secure than passwords", "Easier to remember"] },
+      { id: "q6", text: "Which of the following is a strong passphrase?", options: ["iloveyou4ever", "BirthD@Y200594", "IhadKAYAtoastKOPI@8am", "P@assword1234!"] },
+      { id: "q7", text: "Which of the following is not a good passphrase practice?", options: [
+        "Using the same passphrases for different accounts",
+        "Not writing down your passphrase",
+        "Not sharing your passphrase with anyone",
+        "Using Multi-Factor Authentication for your accounts",
+      ] },
+      { id: "q8", text: "What are the key considerations in selecting a software that helps you to manage your passphrases?", options: [
+        "Software supports Multi-Factor Authentication",
+        "Software does not come from authorised sources",
+        "Software has does not have good reviews",
+        "Software provider does not have a strong track record",
+      ] },
+      { id: "q9", text: "Which of the following is a Multi-Factor Authentication key?", options: ["Biometric", "Pin", "Passphrase", "All of the above"] },
+    ],
+  },
+  {
+    title: "Tip 3: Protect Your Corporate and/or Personal Devices (Used for Work)",
+    questions: [
+      { id: "q10", text: "Which of the following is not a good practice in protecting your device from loss/theft and unauthorised access?", options: [
+        "Using a laptop lock",
+        "Using passwords, PINs, biometric locks or patterns",
+        "Backing up your data",
+        "Enabling the device’s automatic networking features",
+      ] },
+      { id: "q11", text: "Which of the following is not a good practice when using wireless access?", options: ["Using only trusted networks", "Using Virtual Private Networks (VPNs)", "Enabling the automatic connection to Wi-Fi hotspots", "Using mobile phone’s hot spot"] },
+      { id: "q12", text: "Which of the following is an example of a good practice in software security?", options: [
+        "Enabling automatic software updates",
+        "Rebooting your device after the software update",
+        "Applying software security patches to corporate and personal devices",
+        "All of the above",
+      ] },
+    ],
+  },
+  {
+    title: "Tip 4: Report Cyber Incidents (Including Suspected Incidents)",
+    questions: [
+      { id: "q13", text: "Which of the following is a reason to report cyber incidents?", options: [
+        "Preventing potential harm from the incident",
+        "Alerting the IT teams to potential or occurring cyber attacks",
+        "Providing information to IT teams to diagnose the incident",
+        "All of the above",
+      ] },
+      { id: "q14", text: "Which of the following is a common cyber incident?", options: ["Ransomware attack", "Malware attack", "Data breach", "All of the above"] },
+    ],
+  },
+];
+
+const OPTION_LETTERS = ["A", "B", "C", "D"];
+
+let state = {
+  loading: true,
+  error: "",
+  rows: [],
+  lastUpdated: null,
+  refreshing: false,
+};
+
+let timerId = null;
+
+function el(html) {
+  const t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+async function fetchResults() {
+  if (SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
+    state.loading = false;
+    render();
+    return;
+  }
+  state.refreshing = true;
+  render();
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=results`, { cache: "no-store" });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Failed to load results.");
+    state.rows = data.rows || [];
+    state.lastUpdated = new Date();
+    state.error = "";
+  } catch (err) {
+    state.error = "Couldn't load results — check the connection or SCRIPT_URL.";
+  } finally {
+    state.loading = false;
+    state.refreshing = false;
+    render();
+  }
+}
+
+// This Sheet's columns are headed by the actual question text (it's the
+// real Google Form's own response Sheet), and each answer is stored as
+// the full selected option TEXT rather than a letter — so tally by
+// matching against this question's own option strings.
+function tallyFor(q) {
+  const counts = q.options.map(() => 0);
+  state.rows.forEach((row) => {
+    const val = row[q.text];
+    const idx = q.options.indexOf(val);
+    if (idx !== -1) counts[idx] += 1;
+  });
+  return counts;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  app.appendChild(el(`
+    <div class="top">
+      <div>
+        <h1>Cyber Awareness Quiz — Results</h1>
+        <p class="subtitle">Live tally of participant answers, grouped by question.</p>
+      </div>
+    </div>
+  `));
+  app.appendChild(el(`<div class="accent-bar"></div>`));
+
+  if (SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
+    app.appendChild(el(`<div class="config-banner">⚠️ SCRIPT_URL isn't configured yet — paste the Apps Script Web App URL at the top of this file to load real data.</div>`));
+    return;
+  }
+
+  const controls = el(`
+    <div class="top" style="margin-bottom:20px;">
+      <span class="last-updated">${state.lastUpdated ? "Last updated " + state.lastUpdated.toLocaleTimeString() : ""}</span>
+      <div class="controls">
+        <button class="btn ${state.refreshing ? "spinning" : ""}" id="refreshBtn">${state.refreshing ? "Refreshing…" : "Refresh now"}</button>
+      </div>
+    </div>
+  `);
+  app.appendChild(controls);
+  controls.querySelector("#refreshBtn").addEventListener("click", fetchResults);
+
+  if (state.error) {
+    app.appendChild(el(`<div class="error-banner">${state.error}</div>`));
+  }
+
+  if (state.loading) {
+    app.appendChild(el(`<div class="empty-state">Loading…</div>`));
+    return;
+  }
+
+  if (state.rows.length === 0) {
+    app.appendChild(el(`<div class="empty-state">No responses yet — once someone submits the quiz, results will appear here automatically.</div>`));
+    return;
+  }
+
+  app.appendChild(el(`
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-value">${state.rows.length}</div><div class="stat-label">Total responses</div></div>
+      <div class="stat-card"><div class="stat-value">${AUTO_REFRESH_SECONDS}s</div><div class="stat-label">Auto-refresh interval</div></div>
+    </div>
+  `));
+
+  SECTIONS.forEach((section) => {
+    const sectionEl = el(`<div class="section"><p class="section-title">${section.title}</p></div>`);
+    section.questions.forEach((q) => {
+      const counts = tallyFor(q);
+      const total = counts.reduce((a, b) => a + b, 0);
+      const qCard = el(`
+        <div class="q-card">
+          <p class="q-text">${q.text}</p>
+          <p class="q-total">${total} response${total === 1 ? "" : "s"}</p>
+        </div>
+      `);
+      q.options.forEach((optText, i) => {
+        const letter = OPTION_LETTERS[i];
+        const count = counts[i];
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        qCard.appendChild(el(`
+          <div class="bar-row">
+            <span class="bar-letter">${letter}</span>
+            <div class="bar-body">
+              <div class="bar-label-row">
+                <span class="bar-option-text">${optText}</span>
+                <span class="bar-count">${count} (${pct}%)</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            </div>
+          </div>
+        `));
+      });
+      sectionEl.appendChild(qCard);
+    });
+    app.appendChild(sectionEl);
+  });
+
+  const respPanel = el(`
+    <div class="responses-panel">
+      <p class="section-title">All responses</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Time</th><th>Name</th><th>Email</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  `);
+  const tbody = respPanel.querySelector("tbody");
+  state.rows.slice().reverse().forEach((r) => {
+    const ts = r["Timestamp"] ? new Date(r["Timestamp"]).toLocaleString() : "—";
+    tbody.appendChild(el(`
+      <tr>
+        <td>${ts}</td>
+        <td>${r["Full Name"] || "—"}</td>
+        <td>${r["Email"] || "—"}</td>
+      </tr>
+    `));
+  });
+  app.appendChild(respPanel);
+
+  app.appendChild(el(`<div class="footer-stamp">Cyber Awareness Quiz Dashboard</div>`));
+}
+
+render();
+fetchResults();
+timerId = setInterval(fetchResults, AUTO_REFRESH_SECONDS * 1000);
+</script>
+</body>
+</html>
